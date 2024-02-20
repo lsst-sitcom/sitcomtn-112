@@ -77,45 +77,38 @@ Figure 6.  Worst case tracking error (between Az and El) at the time of the InPo
 
 How long does the TMA take to settle after the InPosition timestamp?
 -----------------------------------------------------------------------------------------------------
-To answer this question, we need to determine what we mean by the TMA being settled.  This is not an easy question to answer, but what is done here is to convert the tracking error into a 10 point rolling average, and then demand that the rolling average absolute magnitude is below 0.01 arcseconds and stays there.  Figure 7 shows a typical plot showing the setting time as determined by this method.
-
-.. image:: ./_static/Settling_Time_Example_20231220_487.png
-	   
-Figure 7.  An example showing the TMA settling time.  The vertical black dotted line is the InPosition timestamp, and the vertical green dotted line is when the TMA has settled, using the algorithm described in the text.
-
-Using this definition of the settling time, Figure 8 shows the time for the TMA to settle after the InPosition timestamp.  Sometimes the TMA is settled at the InPosition timestamp, but often it is not.
+To answer this question, we need to determine what we mean by the TMA being settled.  This is not an easy question to answer, but the definition used here is that the TMA is considered settled if the RMS tracking error for the next 15 seconds is less than 0.01 arcseconds.  This definition is a little strange in that you have to look 15 seconds into the future to know if the TMA is settled, but it is what we are using.  Using this definition of the settling time, Figure 7 shows the time for the TMA to settle after the InPosition timestamp.  For most events, the TMA is settled at the InPosition timestamp.  For events which are not settled at the InPosition timestamp, a binary search is run to find how much time needs to be added after InPosition for the RMS tracking error to be less than 0.01 arcseconds. Figure 8 shows an event which is not settled at InPosition.
 
 .. image:: ./_static/Settling_Time_20231220-20231221.png
 	   
-Figure 8.  Histogram of the settling times using the algorithm described in the text.
+Figure 7.  Histogram of the settling times using the algorithm described in the text.
 
-Most tracking events are settled within a few seconds, but some take a very long time to settle.  This is caused by some events where the jitter error stays large for a long time.  An example of this is shown in Figure 9.
-
-.. image:: ./_static/Long_Settling_Time_Example_20231220_121.png
+.. image:: ./_static/Settling_Time_Example_20231220_471.png
 	   
-Figure 9.  Example of a tracking event that takes more than 10 seconds to settle.
+Figure 8.  An example showing an event where the TMA is not settled at the InPosition timestamp.  The vertical black dotted line is the InPosition timestamp, and the vertical green dotted line is when the TMA has settled, using the algorithm described in the text.
+
 
 What is the RMS tracking jitter for a 15 second period after the InPosition timestamp?
 -----------------------------------------------------------------------------------------------------------------------------------
-The specification for the TMA requires that the RMS jitter stays below 0.01 arcseconds for a 15 seconds period after the InPosition time stamp?  How well are we doing compared to this requirement?  Figure 10 shows the results of that analysis, either starting at the InPosition timestamp, or waiting a short time before starting the 15 second period.
+As discussed above, the specification for the TMA requires that the RMS jitter stays below 0.01 arcseconds for a 15 seconds period after the InPosition time stamp.  How well are we doing compared to this requirement?  Figure 9 shows the results of that analysis, either starting at the InPosition timestamp, or waiting a short time before starting the 15 second period.
 
 .. image:: ./_static/Jitter_Summary_20231220-20231221.png
 	   
-Figure 10. RMS jitter for a 15 second period, either starting at the InPosition timestamp, or waiting a short time before starting the 15 second period.
+Figure 9. RMS jitter for a 15 second period, either starting at the InPosition timestamp, or waiting a short time before starting the 15 second period.
 
 Here I need to mention that these results are significantly better than what I showed from earlier analyses.  I believe this is because of two reasons: (1) using the MTMount as the source of the demand position instead of MTPtg, as discussed in the Methodology section, and (2) a better algorithm for screening out the bad datapoints, as discussed in the section on Single point errors in the tracking data stream.
 
 What is the time from the beginning of a slew until the TMA is InPosition and settled?
 -------------------------------------------------------------------------------------------------------------------------------------------------
-The specification for the TMA requires that the TMA can perform slews with a magnitude of less than 3.5 degrees, and be in position and settled in less that 4 seconds.  How well are we doing with respect to this requirement?  Figure 11 shows that if we consider the end of the slew to be the InPosition timestamp, then we are meeting the requirement.  However, Figure 12 shows that if we consider the end of the slew when the TMA has settled to within 0.01 arcseconds, then we are not meeting it.  Clearly more discussion and analysis is needed.
+The specification for the TMA requires that the TMA can perform slews with a magnitude of less than 3.5 degrees, and be in position and settled in less that 4 seconds.  How well are we doing with respect to this requirement?  Figure 10 shows that if we consider the end of the slew to be the InPosition timestamp, then we are meeting the requirement.  However, Figure 11 shows that if we consider the end of the slew when the TMA has settled as described above, the results are not quite as good.
 
 .. image:: ./_static/Slew_Settle_Times_InPosition_20231220-20231221.png
 	   
-Figure 11. Slew and Settle time analysis, assuming that the end of the slew is the InPosition timestamp.
+Figure 10. Slew and Settle time analysis, assuming that the end of the slew is the InPosition timestamp.
 
 .. image:: ./_static/Slew_Settle_Times_Settled_20231220-20231221.png
 	   
-Figure 12. Slew and Settle time analysis, assuming that the end of the slew is when the TMA has settled to within 0.01 arcseconds.
+Figure 11. Slew and Settle time analysis, assuming that the end of the slew is when the TMA has settled as described in the text.
 
 Conclusions
 ============================
