@@ -14,6 +14,12 @@ Abstract
     
 This technote attempts to answer those questions.
 
+In addition, two sections have been added:
+
+#. Multiple night jitter summary from RubinTV
+#. Quantifying the impact of atmospheric seeing on jitter measured with fast cameras.
+
+
 Methodology
 ================
 To analyze the tracking performance of the TMA, several methods were tried, as detailed in the following subsections.
@@ -110,13 +116,80 @@ Figure 10. Slew and Settle time analysis, assuming that the end of the slew is t
 	   
 Figure 11. Slew and Settle time analysis, assuming that the end of the slew is when the TMA has settled as described in the text.
 
+Jitter summary from multiple nights using RubinTV
+=======================================================
+Now that the jitter plots are part of RubinTV (as in Figure 3), it is easy to run more nights and get more statistics.   A notebook to do this is in the notebooks directory of this repository.  The result of applying this to 8 nights in April, 2024 are shown in Figure 12.  Approximately 91% of the slews meet the (RMS < 0.01 arcseconds) specification.  Most of the tracking events that fail the spec look like the ones in Figure 13.  The failures are caused by the EFD problem discussed in the "Single point errors in the tracking data stream" section.
+
+.. image:: ./_static/Jitter_Summary_20240409-20240421.png
+	   
+Figure 12. Tracking jitter summary of 8 nights in April, 2024, using the data from RubinTV.
+
+.. image:: ./_static/RubinTV_Tracking_Plot_20240418_452.png
+	   
+Figure 13. Typical tracking jitter plot that fails the RMS < 0.01 arcsecond specification.
+
+Measuring tracking jitter on the sky with fast cameras
+============================================================
+There has been much discussion of using the StarTracker fast camera and/or the guiding mode on the ComCam/LSSTCam to measure TMA jitter.  However, this will be limited by atmosphere induced jitter. To try and quantify how much jitter will be introduced by the atmosphere, and hence the limit of our ability to quantify TMA jitter by this technique, I ran simulations with GalSim to illustrate this.  I checked the simulations with real image analysis from the AuxTel.
+
+Methodology
+----------------------------------
+GalSim has a realistic model of the atmosphere added to the code by Josh Meyers.  Figure 14 shows a simulation of a star in an LSST image using this code.  On the left side, you can see the image being built up over a 15 second period in time steps of 0.01 seconds.  On the right you see the simulated atmosphere variations above the telescope.  In the first frame, you can see the atmosphere induced speckle, which gradually averages out over the 15 second exposure.  The final image has a FWHM of about 0.7 seconds, so the default conditions represent good seeing conditions.
+
+.. image:: ./_static/psf_movie.gif
+
+Figure 14. Typical image of a star in the LSSTCam, as simulated by GalSim using the default conditions.  Note that this has a much smaller pixel size (0.005 arcseconds) than the actual camera to capture the small scale atmospheric speckle.
+
+StarTracker fast camera
+------------------------------------------
+Now we apply that same technique to the StarTracker fast camera.  For this test, instead of integrating the image over a period of time as in Figure 14, we generate a new image every 0.011 seconds, corresponding to the 90Hz frequency we have been using on the fast camera.  With the smaller aperture and the larger pixel size (0.62 arcseconds), these images look quite different. A typical frame is shown in Figure 15.  Figure 16 shows the centroids of 100 frames, showing an atmospheric induced RMS jitter of about 0.16 arcseconds.
+
+.. image:: ./_static/image_0050.png
+
+Figure 15. Typical image of a star in the StarTracker fast camera.
+
+.. image:: ./_static/centroids_fast_camera.png
+
+Figure 16. Centroids of 100 frames with the StarTracker fast camera, showing an atmospheric induced RMS jitter of about 0.16 arcseconds.
+
+ComCam or LSSTCam in guider mode
+--------------------------------------------------------------------
+Next we apply the same technique to the ComCam or LSSTCam in guider mode.  For this test, instead of integrating the image over a period of time as in Figure 14, we generate a new image every 0.11 seconds, corresponding to the 9Hz frequency available in guider mode.  A typical frame is shown in Figure 17.  Figure 18 shows the centroids of 100 frames, showing an atmospheric induced RMS jitter of about 0.06 arcseconds.
+
+.. image:: ./_static/image_0099.png
+
+Figure 17. Typical image of a star in the ComCam or LSSTCam in guider mode.
+
+.. image:: ./_static/centroids_lsstcam.png
+
+Figure 18. Centroids of 100 frames of the ComCam or LSSTCam in guider mode, showing an atmospheric induced RMS jitter of about 0.06 arcseconds.
+
+Check with AuxTel image
+--------------------------------------------------------------------
+As a check, we look at a real AuxTel image.  To decouple mount jitter from atmospheric induced jitter, we use an image where the mount faulted and the brakes are on, so the mount is not moving.  The jitter of the subsequent trailed image is shown in Figure 19.  Figure 20 shows the jitter of the image around the straight line trail.  This gives an RMS of 0.22 arcseconds. Since the AuxTel seeing is typically around 1.2-1.5 arcseconds, worse than the GalSim simulations, this is roughtly consistent with the preceding section.
+
+.. image:: ./_static/Jitter_from_Stopped_Drive_20240306_566.png
+
+Figure 19. Trailed image from the AuxTel.  A mount fault caused the drive to stop, resulting in trailed images.
+
+.. image:: ./_static/Streak_Jitter_20240306_566.png
+
+Figure 20. Analysis of the brightest trailed streak.  The deviation from the linear motion has an RMS of about 0.22 arcseconds.
+
+Summary of this analysis
+-----------------------------------------------
+The bottom line of this analysis is that it will not be possible to verify the RMS<0.01 arcsecond tracking jitter specification with camera techniques on the sky.  We will need to rely on the encoder analyses to verify this as is done in the earlier sections.  It may be possible to verify on sky that the tracking jitter is less than 0.1-0.25 arcseconds.  
+
+
 Conclusions
 ============================
 
 This technote makes a good start at answering the questions posed in the abstract.  More discussion and work is needed.
 
 The plots in this technote were made with the following notebook at the tickets/SITCOM-1233 branch of notebooks_vandv.
-notebooks/tel_and_site/subsys_req_ver/tma/SITCOMTN-112_SITCOM-1233_Slew_Jitter_Analysis_19Feb24.ipynb
+notebooks/tel_and_site/subsys_req_ver/tma/SITCOMTN-112_SITCOM-1233_Slew_Jitter_Analysis_19Feb24.ipynb.  
+
+
 
 
 
